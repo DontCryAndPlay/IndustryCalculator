@@ -49,14 +49,17 @@ shmop_write($shm_id, str_repeat("\00", 1000), 0);
 
 //interactive cli
 
-$availableCommands = array(
+/*$availableCommands = array(
 	'help' => 'CommandHandler::help',
 	'status' => 'CommandHandler::status',
 	'test' => 'CommandHandler::test',
 	'exit' => 'CommandHandler::exit',
 	'quit' => 'CommandHandler::exit'
-	);
+	);*/
+
 $prompt = "monkey_master";
+
+CommandHandler::discover();
 
 readline_completion_function("CommandHandler::autocomplete");
 
@@ -65,12 +68,13 @@ while(true) {
 	$command = trim(readline($prompt . "[" . $runningMonkeys . "] > "));
 	if($command == "") continue;
 	readline_add_history($command);
-	if(!isset($availableCommands[$command])) {
-		echo "Available commands:\n";
+	if(!isset(CommandHandler::$registeredCommands[$command])) {
+		/*echo "Available commands:\n";
 		foreach($availableCommands as $k=>$v) 
-			echo "\t - " . $k."\n";
+			echo "\t - " . $k."\n";*/
+		echo "Unrecognized command.\n";
 	} else
-		$availableCommands[$command]();
+		CommandHandler::tryExecute($command);
 
 }
 
