@@ -2,10 +2,9 @@
 class CommandHandler {
 	public static $registeredCommands = array();
 	public static function autocomplete($string, $index) {
-		global $availableCommands;
 		$matches = array();
 
-		foreach(array_keys($availableCommands) as $command)
+		foreach(array_keys(self::$registeredCommands) as $command)
 			if(stripos($command, $string) === 0)
 				$matches[] = $command;
 
