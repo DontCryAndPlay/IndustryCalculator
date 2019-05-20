@@ -23,6 +23,8 @@ class CommandHandler {
 	}
 	public static function discover() {
 		include("classes/Command.php");
+
+		// TODO: proper command discovery
 		include("commands/help.php");
 		include("commands/status.php");
 
