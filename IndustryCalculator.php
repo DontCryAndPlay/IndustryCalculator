@@ -10,6 +10,9 @@ if(php_sapi_name() != "cli") {
 	exit(1);
 }
 
+require("exceptions/base.php");
+importExceptions();
+
 require("classes/CommandHandler.php");
 
 //non-interactive cli
@@ -60,7 +63,11 @@ while(true) {
 	$command = trim(readline($prompt . "[" . $runningMonkeys . "] > "));
 	if($command == "") continue;
 	readline_add_history($command);
-	CommandHandler::tryExecute($command);
+	try {
+		CommandHandler::tryExecute($command);
+	} catch(CommandException $e) {
+		echo $e->getMessage();
+	}
 }
 
 ?>

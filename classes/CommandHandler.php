@@ -15,7 +15,7 @@ class CommandHandler {
 	}
 	public static function tryExecute(string $command) : bool {
 		if(!isset(self::$registeredCommands[$command])) {
-			//TODO: exceptions?
+			throw new CommandException("Unrecognized command");
 			return false;
 		}
 		self::$registeredCommands[$command]->execute();
