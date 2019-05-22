@@ -61,7 +61,12 @@ CommandHandler::discover();
 readline_completion_function("CommandHandler::autocomplete");
 
 $s = new SQLite();
-$s->open("asd");
+try {
+	$s->open("asd");
+} catch(FileException $e) {
+	debug("Got %s", $e->getMessage());
+	exit;
+}
 $s->query("penepene");
 $s->close();
 

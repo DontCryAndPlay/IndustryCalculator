@@ -47,11 +47,11 @@ class SQLite implements SQLiteController{
 			return false;
 		}
 		if(!file_exists($filename)) {
-			throw new Exception("File not found exception", 1);
+			throw new FileNotFoundException;
 			return false;
 		}
 		if(!is_readable($filename)) {
-			throw new Exception("File permissions exception", 1);
+			throw new FileNotReadableException;
 			return false;
 		}
 
