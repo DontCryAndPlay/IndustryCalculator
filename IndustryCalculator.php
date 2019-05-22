@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 #Code derived from Monkey Manager
+define("DEBUG", true);
+require("classes/System.php");
 if(!version_compare(PHP_VERSION, '7.2.0', '>=')) {
 	echo "This PHP script requires PHP_VERSION 7.2.0 or greater.\nCurrent PHP_VERSION: ". PHP_VERSION . "\n";
 	exit(1);
@@ -12,8 +14,8 @@ if(php_sapi_name() != "cli") {
 
 require("exceptions/base.php");
 importExceptions();
-
 require("classes/CommandHandler.php");
+require("classes/SQLite.php");
 
 //non-interactive cli
 if(count($argv) > 1) {
@@ -57,6 +59,11 @@ $prompt = "monkey_master";
 CommandHandler::discover();
 
 readline_completion_function("CommandHandler::autocomplete");
+
+$s = new SQLite();
+$s->open("asd");
+$s->query("penepene");
+$s->close();
 
 //starting user prompt
 while(true) {
