@@ -3,7 +3,7 @@ function debug(string $message, ...$params) {
 	$message = vsprintf($message, $params);
 	if(!defined("DEBUG"))
 		return;
-	list(,$caller)=debug_backtrace(false);
+	@list(,$caller)=debug_backtrace(false);
 	if(isset($caller['class'])){
 		if ($caller['class'] == "DummyClass"){
 			list(,,$caller) = debug_backtrace(false);
