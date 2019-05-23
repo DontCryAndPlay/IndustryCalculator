@@ -74,11 +74,15 @@ try {
 	#TODO: create error function
 	debug("Error querying database: %s - Code: %d", $e->getMessage(), $e->getCode());
 }
-$s->close();
 
 //starting user prompt
 while(true) {
-	$command = trim(readline($prompt . "[" . $runningMonkeys . "] > "));
+	if(defined("EXIT"))
+		break;
+	$command = (readline($prompt . "[" . $runningMonkeys . "] > "));
+	if(is_bool($command) && $command === false)
+		break;
+
 	if($command == "") continue;
 	readline_add_history($command);
 	try {
@@ -87,5 +91,7 @@ while(true) {
 		echo $e->getMessage();
 	}
 }
+debug("Shutting down...");
+$s->close();
 
 ?>

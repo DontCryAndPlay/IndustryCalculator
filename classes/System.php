@@ -12,4 +12,11 @@ function debug(string $message, ...$params) {
 	} else
 		printf("[%s]: %s\n", $caller['function'], $message);
 }
+function signalHandler($signal) {
+	switch($signal) {
+		case SIGINT:
+			break;
+	}
+}
+pcntl_signal(SIGINT, "signalHandler");
 ?>
