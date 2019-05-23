@@ -75,6 +75,8 @@ readline_completion_function("CommandHandler::autocomplete");
 $s = new SQLite();
 try {
 	$s->open($dbFile);
+} catch(FileNotFoundException $e) {
+	$s->create($dbFile);
 } catch(FileException $e) {
 	error("Got file exception: %s", $e->getMessage());
 }

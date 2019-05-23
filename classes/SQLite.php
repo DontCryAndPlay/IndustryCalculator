@@ -40,6 +40,19 @@ class SQLite implements SQLiteController{
 				break;
 		}
 	}
+	public function create(string $filename) : bool {
+		if(file_exists($filename)) {
+			throw new FileAlreadyExistsException;
+			return false;
+		}
+		$f = @fopen($filename, "wb");
+		if(!$f) {
+			throw new FileNotWritableException;
+			return false;
+		}
+		fclose($f);
+		return $this->open($filename);
+	}
 	public function open(string $filename) : bool {
 		# TODO: proper exception handling
 		if($this->handler == null) {
