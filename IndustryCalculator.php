@@ -1,6 +1,9 @@
 #!/usr/bin/env php
 <?php
 #Code derived from Monkey Manager
+$configFile = "configuration.ini";
+$dbFile = "database.sqlite";
+
 define("DEBUG", true);
 require("classes/System.php");
 
@@ -9,7 +12,7 @@ importExceptions();
 
 require("classes/ConfigManager.php");
 try {
-	$config = new ConfigManager("configuration.ini");
+	$config = new ConfigManager($configFile);
 } catch(ConfigException $e) {
 	error("Error opening configuration file: %s", $e->getMessage());
 }
@@ -71,7 +74,7 @@ readline_completion_function("CommandHandler::autocomplete");
 
 $s = new SQLite();
 try {
-	$s->open("database.sqlite");
+	$s->open($dbFile);
 } catch(FileException $e) {
 	error("Got file exception: %s", $e->getMessage());
 }
