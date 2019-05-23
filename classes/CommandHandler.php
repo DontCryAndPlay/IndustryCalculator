@@ -24,9 +24,12 @@ class CommandHandler {
 	public static function discover() {
 		include("classes/Command.php");
 
-		// TODO: proper command discovery
-		include("commands/help.php");
-		include("commands/status.php");
+		$files = scandir("commands");
+		foreach($files as $file) {
+			if($file == "." || $file == "..")
+				continue;
+			include("commands/" . $file);
+		}
 
 		$commands = array_filter(
 			get_declared_classes(),
