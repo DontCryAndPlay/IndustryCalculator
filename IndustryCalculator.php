@@ -3,6 +3,17 @@
 #Code derived from Monkey Manager
 define("DEBUG", true);
 require("classes/System.php");
+
+require("exceptions/base.php");
+importExceptions();
+
+require("classes/ConfigManager.php");
+try {
+	$config = new ConfigManager("configuration.ini");
+} catch(ConfigException $e) {
+	#TODO: error function
+}
+
 if(!version_compare(PHP_VERSION, '7.2.0', '>=')) {
 	echo "This PHP script requires PHP_VERSION 7.2.0 or greater.\nCurrent PHP_VERSION: ". PHP_VERSION . "\n";
 	exit(1);
@@ -12,8 +23,6 @@ if(php_sapi_name() != "cli") {
 	exit(1);
 }
 
-require("exceptions/base.php");
-importExceptions();
 require("classes/CommandHandler.php");
 require("classes/SQLite.php");
 
