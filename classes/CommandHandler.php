@@ -14,6 +14,7 @@ class CommandHandler {
 		return $matches;
 	}
 	public static function tryExecute(string $command) : bool {
+		debug("Executing command %s", $command);
 		if(!isset(self::$registeredCommands[$command])) {
 			throw new CommandException("Unrecognized command");
 			return false;
@@ -28,6 +29,7 @@ class CommandHandler {
 		foreach($files as $file) {
 			if($file == "." || $file == "..")
 				continue;
+			debug("Discovered new command file: %s", $file);
 			include("commands/" . $file);
 		}
 
@@ -44,6 +46,7 @@ class CommandHandler {
 
 	public static function registerCommand(Command $command) {
 		$name = $command->getName();
+		debug("Registering command: %s", $name);
 		self::$registeredCommands[$name] = $command;
 	}
 
