@@ -11,7 +11,7 @@ require("classes/ConfigManager.php");
 try {
 	$config = new ConfigManager("configuration.ini");
 } catch(ConfigException $e) {
-	#TODO: error function
+	error("Error opening configuration file: %s", $e->getMessage());
 }
 
 if(!version_compare(PHP_VERSION, '7.2.0', '>=')) {
@@ -71,17 +71,15 @@ readline_completion_function("CommandHandler::autocomplete");
 
 $s = new SQLite();
 try {
-	$s->open("asd");
+	$s->open("database.sqlite");
 } catch(FileException $e) {
-	debug("Got file exception: %s", $e->getMessage());
-	exit;
+	error("Got file exception: %s", $e->getMessage());
 }
 try {
 	$s->query("CREATE TABLE IF NOT EXISTS status ( id int primary key not null)");
 	$s->query("SELECT * FROM status");
 } catch(SQLiteException $e) {
-	#TODO: create error function
-	debug("Error querying database: %s - Code: %d", $e->getMessage(), $e->getCode());
+	error("Error querying database: %s - Code: %d", $e->getMessage(), $e->getCode());
 }
 
 //starting user prompt
@@ -97,7 +95,7 @@ while(true) {
 	try {
 		CommandHandler::tryExecute($command);
 	} catch(CommandException $e) {
-		echo $e->getMessage();
+		error($e->getMessage());
 	}
 }
 debug("Shutting down...");

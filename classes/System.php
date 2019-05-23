@@ -12,6 +12,10 @@ function debug(string $message, ...$params) {
 	} else
 		printf("[%s]: %s\n", $caller['function'], $message);
 }
+function error(string $message, ...$params) {
+	$message = vsprintf($message, $params);
+	printf("%s\n", $message);
+}
 function signalHandler($signal) {
 	switch($signal) {
 		case SIGINT:
