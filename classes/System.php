@@ -1,7 +1,7 @@
 <?php
 function debug(string $message, ...$params) {
 	$message = vsprintf($message, $params);
-	if(!defined("DEBUG"))
+	if(!defined("DEBUG") || DEBUG == false)
 		return;
 	@list(,$caller)=debug_backtrace(false);
 	if(isset($caller['class'])){
