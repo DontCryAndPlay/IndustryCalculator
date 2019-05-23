@@ -64,10 +64,11 @@ $s = new SQLite();
 try {
 	$s->open("asd");
 } catch(FileException $e) {
-	debug("Got %s", $e->getMessage());
+	debug("Got file exception: %s", $e->getMessage());
 	exit;
 }
-$s->query("penepene");
+$s->query("CREATE TABLE IF NOT EXISTS status ( id int primary key not null)");
+$s->query("SELECT * FROM status");
 $s->close();
 
 //starting user prompt

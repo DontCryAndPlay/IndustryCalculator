@@ -86,16 +86,23 @@ class SQLite3Controller implements SQLiteController {
 		debug("Handler loaded");
 	}
 	public function open(string $filename) : bool {
-		#$this->db = new SQLite3($filename);
 		debug("Opening " . $filename);
+		$this->db = new SQLite3($filename);
 		return true;
 	}
 	public function query(string $query) : array {
 		debug("Querying: " . $query);
-		return [];
+		$result = $this->db->query($query);
+		if(is_bool($result))
+			return [];
+		$data = $result->fetchArray(SQLITE3_ASSOC);
+		if(is_bool($data))
+			return [];
+		return (array)$data;
 	}
 	public function close() : bool {
 		debug("Closing database...");
+		$this->db->close();
 		return true;
 	}
 }
