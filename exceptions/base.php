@@ -1,10 +1,11 @@
 <?php
 class ExceptionBase extends Exception {
-	function __construct(string $message = "") {
+	function __construct(string $message = "", int $code = 0) {
 		if(!isset($message) || strlen($message) == 0)
 			$this->message = get_called_class();
 		else
 			$this->message = $message;
+		$this->code = $code;
 	}
 }
 function uncaughtException($e) {

@@ -67,8 +67,13 @@ try {
 	debug("Got file exception: %s", $e->getMessage());
 	exit;
 }
-$s->query("CREATE TABLE IF NOT EXISTS status ( id int primary key not null)");
-$s->query("SELECT * FROM status");
+try {
+	$s->query("CREATE TABLE IF NOT EXISTS status ( id int primary key not null)");
+	$s->query("SELECT * FROM status");
+} catch(SQLiteException $e) {
+	#TODO: create error function
+	debug("Error querying database: %s - Code: %d", $e->getMessage(), $e->getCode());
+}
 $s->close();
 
 //starting user prompt

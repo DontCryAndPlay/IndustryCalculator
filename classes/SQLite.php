@@ -88,11 +88,16 @@ class SQLite3Controller implements SQLiteController {
 	public function open(string $filename) : bool {
 		debug("Opening " . $filename);
 		$this->db = new SQLite3($filename);
+		$this->db->enableExceptions(true);
 		return true;
 	}
 	public function query(string $query) : array {
 		debug("Querying: " . $query);
-		$result = $this->db->query($query);
+		try {
+			$result = $this->db->query($query);
+		} catch(Exception $e) {
+			throw new SQLiteException($this->db->lastErrorMsg(), $this->db->lastErrorCode());
+		}
 		if(is_bool($result))
 			return [];
 		$data = $result->fetchArray(SQLITE3_ASSOC);
