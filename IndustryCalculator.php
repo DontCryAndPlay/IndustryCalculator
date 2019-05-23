@@ -80,21 +80,15 @@ try {
 } catch(FileException $e) {
 	error("Got file exception: %s", $e->getMessage());
 }
-try {
-	$s->query("CREATE TABLE IF NOT EXISTS status ( id int primary key not null)");
-	$s->query("SELECT * FROM status");
-} catch(SQLiteException $e) {
-	error("Error querying database: %s - Code: %d", $e->getMessage(), $e->getCode());
-}
 
 //starting user prompt
 while(true) {
 	if(defined("EXIT"))
 		break;
-	$command = (readline($prompt . "[" . $runningMonkeys . "] > "));
+	$command = readline($prompt . "[" . $runningMonkeys . "] > ");
 	if(is_bool($command) && $command === false)
 		break;
-
+	$command = trim($command);
 	if($command == "") continue;
 	readline_add_history($command);
 	try {
