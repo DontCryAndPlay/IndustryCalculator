@@ -4,7 +4,7 @@
 $configFile = "configuration.ini";
 $dbFile = "database.sqlite";
 
-define("DEBUG", true);
+//define("DEBUG", true);
 require("classes/System.php");
 
 require("exceptions/base.php");
@@ -75,14 +75,17 @@ CommandHandler::discover();
 
 readline_completion_function("CommandHandler::autocomplete");
 
-$s = new SQLite();
+$sqlite = new SQLite();
 try {
-	$s->open($dbFile);
+	$sqlite->open($dbFile);
 } catch(FileNotFoundException $e) {
-	$s->create($dbFile);
+	$sqlite->create($dbFile);
 } catch(FileException $e) {
 	error("Got file exception: %s", $e->getMessage());
 }
+$sqlite->query("PRAGMA journal_mode = memory");
+$sqlite->query("PRAGMA synchronous = \"1\"");
+global $sqlite;
 
 //starting user prompt
 while(true) {
@@ -101,6 +104,6 @@ while(true) {
 	}
 }
 debug("Shutting down...");
-$s->close();
+$sqlite->close();
 
 ?>
