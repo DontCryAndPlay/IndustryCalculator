@@ -42,6 +42,12 @@ class Cursor {
 	public static function goUp(int $n = 1) {
 		printf(self::CURSOR_UP, $n);
 	}
+	public static function goDown(int $n = 1) {
+		printf(self::CURSOR_DOWN, $n);
+	}
+	public static function goRight(int $n = 1) {
+		printf(self::CURSOR_RIGHT, $n);
+	}
 }
 class ProgressBar {
 	private $unfilled = "░";
@@ -65,6 +71,9 @@ class ProgressBar {
 
 		$nFilled = floor($this->maxLength * $this->percent / 100);
 		$nUnfilled = floor($this->maxLength * (100 - $this->percent) / 100);
+
+		if($nFilled + $nUnfilled < $this->maxLength)
+			$nUnfilled += $this->maxLength - ($nFilled + $nUnfilled);
 
 		printf("[%s%s] %d%%\n", str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
 	}
