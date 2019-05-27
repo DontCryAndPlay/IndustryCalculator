@@ -111,6 +111,8 @@ class SQLite3Controller implements SQLiteController {
 		} catch(Exception $e) {
 			throw new SQLiteException($this->db->lastErrorMsg(), $this->db->lastErrorCode());
 		}
+		if($result->numColumns() == 0)
+			return [];
 		if(is_bool($result))
 			return [];
 		$data = $result->fetchArray(SQLITE3_ASSOC);
