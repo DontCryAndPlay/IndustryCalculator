@@ -28,6 +28,7 @@ if(php_sapi_name() != "cli") {
 
 require("classes/CommandHandler.php");
 require("classes/SQLite.php");
+require("classes/Socket.php");
 
 //non-interactive cli
 if(count($argv) > 1) {
