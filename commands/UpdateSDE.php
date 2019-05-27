@@ -35,6 +35,19 @@ class UpdateSDECommand extends Command {
 		} finally {
 			unset($dl);
 		}
+		#TODO: move this to a class library
+		#	- TODO: consider creating FileSystem class library containing all files/zips standard functions
+		$zip = new ZipArchive;
+		$ok = $zip->open($name);
+		if(!$ok) {
+			error("Failed to open ZIP file");
+			return false;
+		}
+		$zip->extractTo("./", array("sde/fsd/typeIDs.yaml", "sde/fsd/blueprints.yaml"));
+		$zip->close();
+		debug("ZIP Extracted");
+		unlink($name);
+		debug("ZIP Removed");
 	}
 }
 ?>
