@@ -30,6 +30,7 @@ require("classes/CommandHandler.php");
 require("classes/SQLite.php");
 require("classes/Socket.php");
 require("classes/Downloader.php");
+require("classes/CLI.php");
 
 //non-interactive cli
 if(count($argv) > 1) {

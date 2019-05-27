@@ -18,8 +18,23 @@ class UpdateSDECommand extends Command {
 		$name = basename($uri);
 		debug("Detected URI: %s", $uri);
 		debug("Detected name: %s", $name);
-		$dl = new Downloader($uri);
-		$dl->execute();
+		$progressBar = new CLI\ProgressBar();
+		try {
+			$dl = new Downloader($uri);
+			$dl->onProgress(function($ch, $totalSize = 0, $downloaded = 0) use ($progressBar) {
+				if($totalSize == 0)
+					return false;
+				$percent = (int) floor($downloaded * 100 / $totalSize);
+				$progressBar->updatePercent($percent);
+			});
+			$dl->force = true;
+			$dl->execute();
+		} catch(Exception $e) {
+			error($e->getMessage());
+			return false;
+		} finally {
+			unset($dl);
+		}
 	}
 }
 ?>
