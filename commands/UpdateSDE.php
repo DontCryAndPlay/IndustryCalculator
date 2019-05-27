@@ -18,6 +18,8 @@ class UpdateSDECommand extends Command {
 		$name = basename($uri);
 		debug("Detected URI: %s", $uri);
 		debug("Detected name: %s", $name);
+		$dl = new Downloader($uri);
+		$dl->execute();
 	}
 }
 ?>
