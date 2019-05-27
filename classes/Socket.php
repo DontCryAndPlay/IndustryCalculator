@@ -141,7 +141,7 @@ class CurlController implements iSocket {
 		$output['errno']   = curl_errno($this->ch);
 		$output['errmsg']  = curl_error($this->ch);
 		if($output['data'] === false)
-			throw new SocketException("Error: %s" . $output['errmsg'], $output['errno']);
+			throw new SocketException("Error: " . $output['errmsg'], $output['errno']);
 
 		return $output;
 	}
