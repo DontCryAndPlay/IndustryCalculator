@@ -79,7 +79,7 @@ class ProgressBar {
 		if($nFilled + $nUnfilled < $this->maxLength)
 			$nUnfilled += $this->maxLength - ($nFilled + $nUnfilled);
 
-		printf("%s[%s%s] %d%%\n", $label, str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
+		printf("%s[%s%s] %d%%\n", $this->label, str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
 	}
 	public function updatePercent(int $percent = 0) {
 		if($percent > 100)
