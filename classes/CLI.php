@@ -65,13 +65,21 @@ class ProgressBar {
 	private function draw() {
 		if($this->drawing) {
 			Cursor::goUp();
+			Cursor::goLeft(1000);
 			Common::clear(Common::CLEAR_RIGHT);
 		}
 		else {
 			$this->drawing = true;
 			if(strlen($this->label) > 0)
-			$this->label = $this->label . ": ";
+			$this->label = "- " . $this->label;
 		}
+
+		$label = $this->label;
+
+		if($this->percent < 100)
+			$label = " " . $label;
+		if($this->percent < 10)
+			$label = " " . $label;
 
 		$nFilled = floor($this->maxLength * $this->percent / 100);
 		$nUnfilled = floor($this->maxLength * (100 - $this->percent) / 100);
@@ -79,7 +87,7 @@ class ProgressBar {
 		if($nFilled + $nUnfilled < $this->maxLength)
 			$nUnfilled += $this->maxLength - ($nFilled + $nUnfilled);
 
-		printf("%s[%s%s] %d%%\n", $this->label, str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
+		printf("[%s%s] %d%% %s\n", str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent, $label);
 	}
 	public function updatePercent(int $percent = 0) {
 		if($percent > 100)
