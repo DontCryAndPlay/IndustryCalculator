@@ -56,6 +56,7 @@ class ProgressBar {
 	private $drawing = false;
 	private $maxLength = 0;
 	private $defaultLength = 20;
+	public $label = "";
 	function __construct(int $maxLength = 0) {
 		if($maxLength == 0)
 			$maxLength = $this->defaultLength;
@@ -66,8 +67,11 @@ class ProgressBar {
 			Cursor::goUp();
 			Common::clear(Common::CLEAR_RIGHT);
 		}
-		else
+		else {
 			$this->drawing = true;
+			if(strlen($this->label) > 0)
+			$this->label = $this->label . ": ";
+		}
 
 		$nFilled = floor($this->maxLength * $this->percent / 100);
 		$nUnfilled = floor($this->maxLength * (100 - $this->percent) / 100);
@@ -75,7 +79,7 @@ class ProgressBar {
 		if($nFilled + $nUnfilled < $this->maxLength)
 			$nUnfilled += $this->maxLength - ($nFilled + $nUnfilled);
 
-		printf("[%s%s] %d%%\n", str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
+		printf("%s[%s%s] %d%%\n", $label, str_repeat($this->filled, $nFilled), str_repeat($this->unfilled, $nUnfilled), $this->percent);
 	}
 	public function updatePercent(int $percent = 0) {
 		if($percent > 100)
