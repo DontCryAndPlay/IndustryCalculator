@@ -101,6 +101,7 @@ class UpdateSDECommand extends Command {
 	}
 	private function createSDE() {
 		$this->installTables();
+		$this->sqlite->query("BEGIN TRANSACTION");
 
 		#TODO: checks for yaml, handler?
 		$this->types      = yaml_parse_file("sde/fsd/typeIDs.yaml");
@@ -137,6 +138,7 @@ class UpdateSDECommand extends Command {
 			$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $blueprintID, $name, $volume);
 			$this->sqlite->query($query);
 		}
+		$this->sqlite->query("COMMIT TRANSACTION");
 	}
 }
 ?>
