@@ -2,6 +2,8 @@
 class UpdateSDECommand extends Command {
 	protected static $name = "sde-update";
 	protected static $helpMessage = "Download and syncs local data with the latest SDE";
+	private $types, $blueprints;
+	private $sqlite;
 	public function execute() {
 		$socket = new Socket("GET", "https://developers.eveonline.com/resource/resources");
 
@@ -19,6 +21,7 @@ class UpdateSDECommand extends Command {
 		debug("Detected URI: %s", $uri);
 		debug("Detected name: %s", $name);
 		$progressBar = new CLI\ProgressBar();
+		$progressBar->label = sprintf("Downloading %s", $name);
 		try {
 			$dl = new Downloader($uri);
 			$dl->onProgress(function($ch, $totalSize = 0, $downloaded = 0) use ($progressBar) {
@@ -49,76 +52,78 @@ class UpdateSDECommand extends Command {
 		unlink($name);
 		debug("ZIP Removed");
 
+		global $sqlite;
+		$this->sqlite = $sqlite;
+
 		$this->createSDE();
 	}
+	private function processStep(array $data, string $table) : bool {
+		foreach($data as $material) {
+			$id = $material['typeID'];
+			$quantity = $material['quantity'];
+			$query = sprintf("SELECT typeID FROM type WHERE typeID = %u LIMIT 1", $id);
+			$d = $this->sqlite->query($query);
+
+			if(count($d) == 0) {
+				if(!isset($this->types[$id]))
+					return false;
+
+				$name = $this->types[$id]['name']['en'];
+				$volume = $this->types[$id]['volume'] ?? 0;
+				$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $id, $name, $volume);
+				$this->sqlite->query($query);
+			}
+
+			$query = sprintf("INSERT INTO %s VALUES(%u, %u, %u)", $table, $blueprintID, $quantity, $id);
+			$this->sqlite->query($query);
+		}
+		return true;
+	}
+	private function installTables() {
+		$this->sqlite->query("DROP TABLE IF EXISTS `manufacture_input`");
+		$this->sqlite->query("DROP TABLE IF EXISTS `manufacture_output`");
+		$this->sqlite->query("DROP TABLE IF EXISTS `type`");
+		$this->sqlite->query("CREATE TABLE IF NOT EXISTS `type` ( `typeID` INTEGER NOT NULL, `name` TEXT NOT NULL, `volume` NUMERIC NOT NULL, PRIMARY KEY(`typeID`) ) WITHOUT ROWID");
+		$this->sqlite->query("CREATE TABLE IF NOT EXISTS `manufacture_input` ( `bpid` INTEGER NOT NULL, `amount` INTEGER NOT NULL, `typeid` INTEGER NOT NULL, PRIMARY KEY(`bpid`,`typeid`), FOREIGN KEY(`bpid`) REFERENCES `type`(`typeID`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY(`typeid`) REFERENCES `type`(`typeID`) ON DELETE CASCADE ON UPDATE CASCADE ) WITHOUT ROWID");
+		$this->sqlite->query("CREATE TABLE IF NOT EXISTS `manufacture_output` ( `bpid` INTEGER NOT NULL, `amount` INTEGER NOT NULL, `typeid` INTEGER NOT NULL, PRIMARY KEY(`bpid`,`typeid`), FOREIGN KEY(`bpid`) REFERENCES `type`(`typeID`) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY(`typeid`) REFERENCES `type`(`typeID`) ON UPDATE CASCADE ON DELETE CASCADE ) WITHOUT ROWID");
+	}
 	private function createSDE() {
-		global $sqlite;
-		//var_dump($sqlite);
-		$sqlite->query("DROP TABLE IF EXISTS `manufacture_input`");
-		$sqlite->query("DROP TABLE IF EXISTS `manufacture_output`");
-		$sqlite->query("DROP TABLE IF EXISTS `type`");
-		$sqlite->query("CREATE TABLE IF NOT EXISTS `type` ( `typeID` INTEGER NOT NULL, `name` TEXT NOT NULL, `volume` NUMERIC NOT NULL, PRIMARY KEY(`typeID`) ) WITHOUT ROWID");
-		$sqlite->query("CREATE TABLE IF NOT EXISTS `manufacture_input` ( `bpid` INTEGER NOT NULL, `amount` INTEGER NOT NULL, `typeid` INTEGER NOT NULL, PRIMARY KEY(`bpid`,`typeid`), FOREIGN KEY(`bpid`) REFERENCES `type`(`typeID`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY(`typeid`) REFERENCES `type`(`typeID`) ON DELETE CASCADE ON UPDATE CASCADE ) WITHOUT ROWID");
-		$sqlite->query("CREATE TABLE IF NOT EXISTS `manufacture_output` ( `bpid` INTEGER NOT NULL, `amount` INTEGER NOT NULL, `typeid` INTEGER NOT NULL, PRIMARY KEY(`bpid`,`typeid`), FOREIGN KEY(`bpid`) REFERENCES `type`(`typeID`) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY(`typeid`) REFERENCES `type`(`typeID`) ON UPDATE CASCADE ON DELETE CASCADE ) WITHOUT ROWID");
+		$this->installTables();
+
 		#TODO: checks for yaml, handler?
-		$types = yaml_parse_file("sde/fsd/typeIDs.yaml");
-		$bps   = yaml_parse_file("sde/fsd/blueprints.yaml");
+		$this->types      = yaml_parse_file("sde/fsd/typeIDs.yaml");
+		$this->blueprints = yaml_parse_file("sde/fsd/blueprints.yaml");
+
 		$progressBar = new CLI\ProgressBar();
-		$total = count($bps);
+		$progressBar->label = "Updating local database";
+
+		$total = count($this->blueprints);
 		$i = 0;
-		foreach($bps as $blueprint) {
+		foreach($this->blueprints as $blueprint) {
 			$i++;
 			$percent = floor($i * 100 / $total);
 			$progressBar->updatePercent($percent);
+
 			if(!isset($blueprint['activities']['manufacturing']['materials']) ||
 			   !isset($blueprint['activities']['manufacturing']['products']))
 				continue;
 			$blueprintID = $blueprint['blueprintTypeID'];
 			if(!isset($types[$blueprintID]))
 				continue;
+
 			$name = $types[$blueprintID]['name']['en'];
 			$volume = $types[$blueprintID]['volume'] ?? 0;
-			$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $blueprintID, $name, $volume);
-			$sqlite->query($query);
-			foreach($blueprint['activities']['manufacturing']['materials'] as $material) {
-				$id = $material['typeID'];
-				$quantity = $material['quantity'];
-				$query = sprintf("SELECT typeID FROM type WHERE typeID = %u LIMIT 1", $id);
-				$d = $sqlite->query($query);
-				if(count($d) == 0) {
-					if(!isset($types[$id])) {
-						$query = sprintf("DELETE FROM type WHERE typeid = %u LIMIT 1", $blueprintID);
-						$sqlite->query($query);
-						continue 2;
-					}
 
-					$name = $types[$id]['name']['en'];
-					$volume = $types[$id]['volume'] ?? 0;
-					$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $id, $name, $volume);
-					$sqlite->query($query);
-				}
-				$query = sprintf("INSERT INTO manufacture_input VALUES(%u, %u, %u)", $blueprintID, $quantity, $id);
-				$sqlite->query($query);
-			}
-			foreach($blueprint['activities']['manufacturing']['products'] as $product) {
-				$id = $product['typeID'];
-				$quantity = $product['quantity'];
-				$query = sprintf("SELECT typeID FROM type WHERE typeID = %u LIMIT 1", $id);
-				$d = $sqlite->query($query);
-				if(count($d) == 0) {
-					if(!isset($types[$id])) {
-						$query = sprintf("DELETE FROM type WHERE typeid = %u LIMIT 1", $blueprintID);
-						$sqlite->query($query);
-						continue 2;
-					}
-					$name = $types[$id]['name']['en'];
-					$volume = $types[$id]['volume'] ?? 0;
-					$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $id, $name, $volume);
-					$sqlite->query($query);
-				}
-				$query = sprintf("INSERT INTO manufacture_output VALUES(%u, %u, %u)", $blueprintID, $quantity, $id);
-				$sqlite->query($query);
-			}
+			$ok = $this->processStep($blueprint['activities']['manufacturing']['materials'], "manufacture_input");
+			if(!$ok)
+				continue;
+
+			$ok = $this->processStep($blueprint['activities']['manufacturing']['products'], "manufacture_output");
+			if(!$ok)
+				continue;
+
+			$query = sprintf("INSERT INTO type VALUES(%u, \"%s\", %f)", $blueprintID, $name, $volume);
+			$this->sqlite->query($query);
 		}
 	}
 }
