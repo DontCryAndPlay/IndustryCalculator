@@ -57,7 +57,19 @@ class UpdateSDECommand extends Command {
 
 		$this->createSDE();
 	}
-	private function processStep(array $data, string $table) : bool {
+	private function processStep(int $blueprintID, string $step) : bool {
+		switch ($step) {
+			case "input":
+				$table = "manufacture_input";
+				$data = $this->blueprints[$blueprintID]['activities']['manufacturing']['materials'];
+				break;
+			case "output":
+				$table = "manufacture_output";
+				$data = $this->blueprints[$blueprintID]['activities']['manufacturing']['products'];
+				break;
+			default:
+				return false;
+		}
 		foreach($data as $material) {
 			$id = $material['typeID'];
 			$quantity = $material['quantity'];
@@ -108,17 +120,17 @@ class UpdateSDECommand extends Command {
 			   !isset($blueprint['activities']['manufacturing']['products']))
 				continue;
 			$blueprintID = $blueprint['blueprintTypeID'];
-			if(!isset($types[$blueprintID]))
+			if(!isset($this->types[$blueprintID]))
 				continue;
 
-			$name = $types[$blueprintID]['name']['en'];
-			$volume = $types[$blueprintID]['volume'] ?? 0;
+			$name = $this->types[$blueprintID]['name']['en'];
+			$volume = $this->types[$blueprintID]['volume'] ?? 0;
 
-			$ok = $this->processStep($blueprint['activities']['manufacturing']['materials'], "manufacture_input");
+			$ok = $this->processStep($blueprintID, "input");
 			if(!$ok)
 				continue;
 
-			$ok = $this->processStep($blueprint['activities']['manufacturing']['products'], "manufacture_output");
+			$ok = $this->processStep($blueprintID, "output");
 			if(!$ok)
 				continue;
 
